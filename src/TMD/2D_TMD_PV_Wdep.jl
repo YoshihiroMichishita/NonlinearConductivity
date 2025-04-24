@@ -1,8 +1,9 @@
 using Distributed
 addprocs(4)
 @everywhere include("./2D_TMD_parm.jl")
-@everywhere include("./transport.jl")
-@everywhere include("./k_C3.jl")
+
+@everywhere include("../utils/transport.jl")
+@everywhere include("../utils/k_C3.jl")
 
 using DataFrames
 using CSV
