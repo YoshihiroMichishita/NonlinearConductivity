@@ -102,8 +102,8 @@ struct Parm
     γ::Char
 end
 
-function set_parm()
-    parsed_args = parse_input_args()
+function set_parm(parsed_args)
+    #parsed_args = parse_input_args()
     t_i = parsed_args["t_i"]
     a_u = parsed_args["a_u"]
     a_d = parsed_args["a_d"]
@@ -127,8 +127,8 @@ function set_parm()
     return parm
 end
 
-function set_parm_mudep(mu::Float64)
-    parsed_args = parse_input_args()
+function set_parm_mudep(parsed_args, mu::Float64)
+    #parsed_args = parse_input_args()
     t_i = parsed_args["t_i"]
     a_u = parsed_args["a_u"]
     a_d = parsed_args["a_d"]
@@ -152,8 +152,8 @@ function set_parm_mudep(mu::Float64)
     return parm
 end
 
-function set_parm_Wdep(W::Float64)
-    parsed_args = parse_input_args()
+function set_parm_Wdep(parsed_args, W::Float64)
+    #parsed_args = parse_input_args()
     t_i = parsed_args["t_i"]
     a_u = parsed_args["a_u"]
     a_d = parsed_args["a_d"]
@@ -177,8 +177,8 @@ function set_parm_Wdep(W::Float64)
     return parm
 end
 
-function set_parm_etadep(eta0::Float64)
-    parsed_args = parse_input_args()
+function set_parm_etadep(parsed_args, eta0::Float64)
+    #parsed_args = parse_input_args()
     t_i = parsed_args["t_i"]
     a_u = parsed_args["a_u"]
     a_d = parsed_args["a_d"]
@@ -202,8 +202,8 @@ function set_parm_etadep(eta0::Float64)
     return parm
 end
 
-function set_parm_Tdep(T0::Float64)
-    parsed_args = parse_input_args()
+function set_parm_Tdep(parsed_args, T0::Float64)
+    #parsed_args = parse_input_args()
     t_i = parsed_args["t_i"]
     a_u = parsed_args["a_u"]
     a_d = parsed_args["a_d"]
