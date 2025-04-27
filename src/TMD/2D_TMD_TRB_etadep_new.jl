@@ -1,17 +1,17 @@
 using Distributed
 addprocs(4)
 @everywhere include("./2D_TMD_parm.jl")
-@everywhere include("./transport.jl")
-@everywhere include("./k_C3.jl")
+@everywhere include("../utils/transport.jl")
+@everywhere include("../utils/k_C3.jl")
 
 
 using DataFrames
 using CSV
 using Plots
 
-function main(arg::Array{String,1})
-
-    K_SIZE = parse(Int,arg[11])
+function main()
+    args = parse_input_args()
+    K_SIZE = args["K_SIZE"]
     kk = get_kk(K_SIZE)
 
     eta = collect(0.01:0.01:0.1)
@@ -26,7 +26,7 @@ function main(arg::Array{String,1})
 
 
     for j in 1:length(eta)
-        p = Parm(set_parm_etadep(arg, eta[j])...)
+        p = set_parm_etadep(args, eta[j])
         kk = get_kk(p.K_SIZE)
         dk2 = 2.0/(3*sqrt(3.0)*p.K_SIZE*p.K_SIZE)
         
@@ -48,7 +48,7 @@ function main(arg::Array{String,1})
     println("finish the calculation!")
     # headerの名前を(Q,E1,E2)にして、CSVファイル形式を作成
     save_data2 = DataFrame(η=eta, Drude=Drude_eta, BCD=BCD_eta, gBC=gBC_eta, ChS=ChS_eta, Green=Green_eta, Green_sea=Green_eta_sea)
-    CSV.write("./etadep_"*arg[15]*arg[16]*arg[17]*"_T"*arg[7]*".csv", save_data2)
+    CSV.write("./etadep_"*args["α"]*args["β"]*args["γ"]*"_T"*args["T"]*".csv", save_data2)
 
     ENV["GKSwstype"]="nul"
     Plots.scalefontsizes(1.4)
@@ -59,7 +59,7 @@ function main(arg::Array{String,1})
     p1 = plot!(eta, BCD_eta, label="BCD", width=4.0, marker=:circle, markersize = 4.8)
     p1 = plot!(eta, gBC_eta, label="gBC", width=4.0, marker=:circle, markersize = 4.8)
     p1 = plot!(eta, ChS_eta, label="ChS", width=4.0, marker=:circle, markersize = 4.8)
-    savefig(p1,"./etadep_"*arg[15]*arg[16]*arg[17]*".png")
+    savefig(p1,"./etadep_"*args["α"]*args["β"]*args["γ"]*".png")
 end
 
-@time main(ARGS)
+@time main()

@@ -188,20 +188,6 @@ end
     return ZXY_YX
     #, XYZ_ZY
 end
-#=
-@everywhere function Green_PV_NLH(p::Parm, H::Hamiltonian_3D)
-    ZXY_YX::Float64 = 0.0
-    XYZ_ZY::Float64 = 0.0
-    dw::Float64 = p.W_MAX/p.W_SIZE/pi
-    for w in collect(-p.W_MAX:2.0p.W_MAX/p.W_SIZE:p.W_MAX)
-        #range(-p.W_MAX, p.W_MAX, length=p.W_SIZE)
-        G = Green(Gk(w,p,H)...)
-        ZXY_YX += imag(tr(H.Vz*G.GR*H.Vyx*G.GRmA) + tr(H.Vz*G.GRmA*H.Vyx*G.GA) + tr(H.Vxz*G.GRp*H.Vy*G.GRmA) + tr(H.Vxz*G.GRmA*H.Vy*G.GAm) + tr(H.Vz*G.GR*H.Vx*G.GRp*H.Vy*G.GRmA) + tr(H.Vz*G.GRm*H.Vx*G.GRmA*H.Vy*G.GAm) + tr(H.Vz*G.GRmA*H.Vx*G.GAp*H.Vy*G.GA))*f(w,p.T)/(p.W_in^2)
-        XYZ_ZY += imag(tr(H.Vx*G.GR*H.Vyz*G.GRmA) + tr(H.Vx*G.GRmA*H.Vyz*G.GA) + tr(H.Vyx*G.GRp*H.Vz*G.GRmA) + tr(H.Vyx*G.GRmA*H.Vz*G.GAm) + tr(H.Vx*G.GR*H.Vy*G.GRp*H.Vz*G.GRmA) + tr(H.Vx*G.GRm*H.Vy*G.GRmA*H.Vz*G.GAm) + tr(H.Vx*G.GRmA*H.Vy*G.GAp*H.Vz*G.GA))*f(w,p.T)/(p.W_in^2)
-    end
-    return dw*ZXY_YX, dw*XYZ_ZY
-end
-=#
 
 @everywhere function Green_PV_NLH(p::Parm, H::Hamiltonian_3D)
     ZXY_YX::Float64 = 0.0
@@ -279,7 +265,7 @@ end
         dQMD += -2.0*real(H.Vx[i,3-i]*H.Vx[3-i,i]/((H.E[i]-H.E[3-i]+2.0im*p.eta)^2))imag(H.Vx[i,i]*df(H.E[i]+1.0im*p.eta, p.T))/p.eta
         Inter += -2.0*real(H.Vx[i,3-i]*H.Vx[3-i,3-i]*H.Vx[3-i,i]/((H.E[i]-H.E[3-i]+2.0im*p.eta)^3))*real(df(H.E[i]+1.0im*p.eta, p.T))
         dInter += 2.0*imag(H.Vx[i,3-i]*H.Vx[3-i,3-i]*H.Vx[3-i,i]/((H.E[i]-H.E[3-i]+2.0im*p.eta)^3))*imag(df(H.E[i]+1.0im*p.eta, p.T))
-    endd
+    end
 
     return Drude, BCD, sQMD, dQMD, Inter, dInter
 end
@@ -318,8 +304,6 @@ function main(arg::Array{String,1})
             XXXG_mu[j] += XXXG
             XXXSC_mu[j] += XXXSC
         end
-        #push!(A,"#")
-        #println(A)
     end
     println("finish the calculation!")
     # headerの名前を(Q,E1,E2)にして、CSVファイル形式を作成

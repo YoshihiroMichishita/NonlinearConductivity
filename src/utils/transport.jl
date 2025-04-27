@@ -173,15 +173,20 @@ function Green_DC_BI_linear_full(p::Parm, H::Hamiltonian)
     dQM::Float64 = 0.0
     app_QM::Float64 = 0.0
     
-    
+    nb = size(H.Hk)[1]
     HV_BI!(H)
 
-    for i = 1:2
+    for i in 1:nb
         Drude += -real(H.Va[i,i]*H.Vb[i,i])*real(df(H.E[i]+1.0im*p.eta, p.T))/(2.0p.eta)
         Drude0 += -real(H.Va[i,i]*H.Vb[i,i])*real(df(H.E[i], p.T))/(2.0p.eta)
-        BC += imag(H.Va[i,3-i]*H.Vb[3-i,i])*real(f(H.E[i]+1.0im*p.eta, p.T)/(H.E[i]-H.E[3-i]+2.0im*p.eta)^2)
-        dQM += real(H.Va[i,3-i]*H.Vb[3-i,i])*imag(df(H.E[i]+1.0im*p.eta, p.T)/(H.E[i]-H.E[3-i]+2.0im*p.eta))
-        app_QM += 2.0*p.eta*real(H.Va[i,3-i]*H.Vb[3-i,i])/((H.E[i]-H.E[3-i])^2+4.0*p.eta^2)*(-df(H.E[i], p.T))
+        for j in 1:nb
+            if(i == j)
+                continue
+            end
+            BC += imag(H.Va[i,j]*H.Vb[j,i])*real(f(H.E[i]+1.0im*p.eta, p.T)/(H.E[i]-H.E[j]+2.0im*p.eta)^2)
+            dQM += real(H.Va[i,j]*H.Vb[j,i])*imag(df(H.E[i]+1.0im*p.eta, p.T)/(H.E[i]-H.E[j]+2.0im*p.eta))
+            app_QM += 2.0*p.eta*real(H.Va[i,j]*H.Vb[j,i])/((H.E[i]-H.E[j])^2+4.0*p.eta^2)*(-df(H.E[i], p.T))
+        end
     end
     return Drude, Drude0, BC, dQM, app_QM
 end
@@ -243,16 +248,23 @@ function Green_DC_BI_nonlinear_full(p::Parm, H::Hamiltonian)
     Drude::Float64 = 0.0
     ChS::Float64 = 0.0
     gBC::Float64 = 0.0
+    nb = size(H.Hk)[1]
     HV_BI!(H)
-    for i = 1:2
-        BCD += imag(H.Va[i,3-i]*H.Vb[3-i,i]*H.Vc[i,i] + H.Va[i,3-i]*H.Vc[3-i,i]*H.Vb[i,i])*real(1.0/((H.E[i]-H.E[3-i]+2.0im*p.eta)^2)*df(H.E[i]+1.0im*p.eta,p.T))/(2.0p.eta)
-        Drude+= real(H.Va[i,i]*(2.0*H.Vb[i,i]*H.Vc[i,i]/(2.0im*p.eta) + (H.Vb[i,3-i]*H.Vc[3-i,i]+H.Vc[i,3-i]*H.Vb[3-i,i] + H.Vbc[i,i])*real(1.0/(H.E[i]-H.E[3-i]+2.0im*p.eta)))/(-4.0*p.eta^2)*df(H.E[i]+1.0im*p.eta,p.T)) 
-        ChS += real(H.Va[i,3-i]*H.Vb[3-i,i]*H.Vc[i,i] + H.Va[i,3-i]*H.Vc[3-i,i]*H.Vb[i,i] + H.Va[i,3-i]*H.Vbc[3-i,i])*imag(1.0/((H.E[i]-H.E[3-i]+2.0im*p.eta)^2)*df(H.E[i]+1.0im*p.eta,p.T))/(2.0p.eta)
-        ChS += real(H.Va[i,i]*(H.Vb[i,3-i]*H.Vc[3-i,i]+H.Vc[i,3-i]*H.Vb[3-i,i])*2.0im/((H.E[i]-H.E[3-i])^2+4.0*p.eta^2)/(-4.0*p.eta)*df(H.E[i]+1.0im*p.eta,p.T)) 
-        ChS += real(H.Va[i,3-i]*(H.Vb[3-i,3-i]*H.Vc[3-i,i]+H.Vc[3-i,3-i]*H.Va[3-i,i]))*real(1.0/(H.E[i]-H.E[3-i]+2.0im*p.eta)^3*df(H.E[i]+1.0im*p.eta,p.T))
-        
-        gBC += -imag(H.Va[i,3-i]*(H.Vb[3-i,3-i]*H.Vc[3-i,i]+H.Vc[3-i,3-i]*H.Vb[3-i,i]))*imag(1.0/(H.E[i]-H.E[3-i]+2.0im*p.eta)^3*df(H.E[i]+1.0im*p.eta,p.T))
-        gBC += -imag(H.Va[i,3-i]*H.Vbc[3-i,i])*imag(1.0/(H.E[i]-H.E[3-i]+2.0im*p.eta)^2*df(H.E[i]+1.0im*p.eta,p.T))
+    for i in 1:nb
+        Drude+= real(H.Va[i,i]*(2.0*H.Vb[i,i]*H.Vc[i,i]/(2.0im*p.eta))/(-4.0*p.eta^2)*df(H.E[i]+1.0im*p.eta,p.T))
+        for j in 1:nb
+            if(i == j)
+                continue
+            end
+            BCD += imag(H.Va[i,j]*H.Vb[j,i]*H.Vc[i,i] + H.Va[i,j]*H.Vc[j,i]*H.Vb[i,i])*real(1.0/((H.E[i]-H.E[j]+2.0im*p.eta)^2)*df(H.E[i]+1.0im*p.eta,p.T))/(2.0p.eta)
+            Drude+= real(H.Va[i,i]*((H.Vb[i,j]*H.Vc[j,i]+H.Vc[i,j]*H.Vb[j,i] + H.Vbc[i,i])*real(1.0/(H.E[i]-H.E[j]+2.0im*p.eta)))/(-4.0*p.eta^2)*df(H.E[i]+1.0im*p.eta,p.T)) 
+            ChS += real(H.Va[i,j]*H.Vb[j,i]*H.Vc[i,i] + H.Va[i,j]*H.Vc[j,i]*H.Vb[i,i] + H.Va[i,j]*H.Vbc[j,i])*imag(1.0/((H.E[i]-H.E[j]+2.0im*p.eta)^2)*df(H.E[i]+1.0im*p.eta,p.T))/(2.0p.eta)
+            ChS += real(H.Va[i,i]*(H.Vb[i,j]*H.Vc[j,i]+H.Vc[i,j]*H.Vb[j,i])*2.0im/((H.E[i]-H.E[j])^2+4.0*p.eta^2)/(-4.0*p.eta)*df(H.E[i]+1.0im*p.eta,p.T)) 
+            ChS += real(H.Va[i,j]*(H.Vb[j,j]*H.Vc[j,i]+H.Vc[j,j]*H.Va[j,i]))*real(1.0/(H.E[i]-H.E[j]+2.0im*p.eta)^3*df(H.E[i]+1.0im*p.eta,p.T))
+            
+            gBC += -imag(H.Va[i,j]*(H.Vb[j,j]*H.Vc[j,i]+H.Vc[j,j]*H.Vb[j,i]))*imag(1.0/(H.E[i]-H.E[j]+2.0im*p.eta)^3*df(H.E[i]+1.0im*p.eta,p.T))
+            gBC += -imag(H.Va[i,j]*H.Vbc[j,i])*imag(1.0/(H.E[i]-H.E[j]+2.0im*p.eta)^2*df(H.E[i]+1.0im*p.eta,p.T))
+        end
     end
     return Drude, BCD, ChS, gBC
 end

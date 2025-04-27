@@ -1,6 +1,86 @@
 #using Distributed
 #addprocs(30)
 
+using ArgParse
+using StaticArrays
+
+function parse_input_args()
+    s = ArgParseSettings()
+    @add_arg_table s begin
+        "--t_i" # => (parse(Float64, _), "t_i")
+            help = "hopping parameter(Float64)"
+            default = 1.0
+            arg_type = Float64
+        "--a_u"
+            help = "soc1 parameter(Float64)"
+            default = 0.2
+            arg_type = Float64
+        "--a_d"
+            help = "soc2 parameter(Float64)"
+            default = 0.2
+            arg_type = Float64
+        "--Pr"
+            help = "Pressure parameter(Float64)"
+            default = 1.0
+            arg_type = Float64
+        "--mu0"
+            help = "Chemical potential parameter(Float64)"
+            default = 0.0
+            arg_type = Float64
+        "--eta"
+            help = "dissipation parameter(Float64)"
+            default = 0.02
+            arg_type = Float64
+        "--T"
+            help = "Temperature parameter(Float64)"
+            default = 0.02
+            arg_type = Float64
+        "--hx"
+            help = "magnetic field(x) parameter(Float64)"
+            default = 0.0
+            arg_type = Float64
+        "--hy"
+            help = "magnetic field(y) parameter(Float64)"
+            default = 0.0
+            arg_type = Float64
+        "--hz"
+            help = "magnetic field(z) parameter(Float64)"
+            default = 0.0
+            arg_type = Float64
+        "--K_SIZE"
+            help = "k-point size(Int)"
+            default = 200
+            arg_type = Int
+        "--W_MAX"
+            help = "Maximal width of the system(Float64)"
+            default = 1.0
+            arg_type = Float64
+        "--W_in"
+            help = "Frequency of input electric field(Float64)"
+            default = 0.0
+            arg_type = Float64
+        "--W_SIZE"
+            help = "w-point size(Int)"
+            default = 1000
+            arg_type = Int
+        "--α"
+            help = "direction of the first derivative"
+            default = 'Y'
+            arg_type = Char
+        "--β"
+            help = "direction of the second derivative"
+            default = 'X'
+            arg_type = Char
+        "--γ"
+            help = "direction of the third derivative"
+            default = 'X'
+            arg_type = Char
+    end
+
+    return parse_args(s)
+end
+
+
 #Parm(t_i, a_u, a_d, Pr, mu, eta, T, hx, hy, hz, K_SIZE, W_MAX, W_in, W_SIZE, α, β, γ)
 struct Parm
     t_i::Float64
@@ -22,6 +102,131 @@ struct Parm
     γ::Char
 end
 
+function set_parm(parsed_args)
+    #parsed_args = parse_input_args()
+    t_i = parsed_args["t_i"]
+    a_u = parsed_args["a_u"]
+    a_d = parsed_args["a_d"]
+    Pr = parsed_args["Pr"]
+    mu0 = parsed_args["mu0"]
+    eta = parsed_args["eta"]
+    T = parsed_args["T"]
+    hx = parsed_args["hx"]
+    hy = parsed_args["hy"]
+    hz = parsed_args["hz"]
+    K_SIZE = parsed_args["K_SIZE"]
+    W_MAX = parsed_args["W_MAX"]
+    W_in = parsed_args["W_in"]
+    W_SIZE = parsed_args["W_SIZE"]
+    α = parsed_args["α"]
+    β = parsed_args["β"]
+    γ = parsed_args["γ"]
+    # Convert to Parm struct
+    parm = Parm(t_i, a_u, a_d, Pr, mu0, eta, T, hx, hy, hz, K_SIZE, W_MAX, W_in, W_SIZE, α, β, γ)
+
+    return parm
+end
+
+function set_parm_mudep(parsed_args, mu::Float64)
+    #parsed_args = parse_input_args()
+    t_i = parsed_args["t_i"]
+    a_u = parsed_args["a_u"]
+    a_d = parsed_args["a_d"]
+    Pr = parsed_args["Pr"]
+    mu0 = mu
+    eta = parsed_args["eta"]
+    T = parsed_args["T"]
+    hx = parsed_args["hx"]
+    hy = parsed_args["hy"]
+    hz = parsed_args["hz"]
+    K_SIZE = parsed_args["K_SIZE"]
+    W_MAX = parsed_args["W_MAX"]
+    W_in = parsed_args["W_in"]
+    W_SIZE = parsed_args["W_SIZE"]
+    α = parsed_args["α"]
+    β = parsed_args["β"]
+    γ = parsed_args["γ"]
+    # Convert to Parm struct
+    parm = Parm(t_i, a_u, a_d, Pr, mu0, eta, T, hx, hy, hz, K_SIZE, W_MAX, W_in, W_SIZE, α, β, γ)
+
+    return parm
+end
+
+function set_parm_Wdep(parsed_args, W::Float64)
+    #parsed_args = parse_input_args()
+    t_i = parsed_args["t_i"]
+    a_u = parsed_args["a_u"]
+    a_d = parsed_args["a_d"]
+    Pr = parsed_args["Pr"]
+    mu0 = parsed_args["mu0"]
+    eta = parsed_args["eta"]
+    T = parsed_args["T"]
+    hx = parsed_args["hx"]
+    hy = parsed_args["hy"]
+    hz = parsed_args["hz"]
+    K_SIZE = parsed_args["K_SIZE"]
+    W_MAX = parsed_args["W_MAX"]
+    W_in = W
+    W_SIZE = parsed_args["W_SIZE"]
+    α = parsed_args["α"]
+    β = parsed_args["β"]
+    γ = parsed_args["γ"]
+    # Convert to Parm struct
+    parm = Parm(t_i, a_u, a_d, Pr, mu0, eta, T, hx, hy, hz, K_SIZE, W_MAX, W_in, W_SIZE, α, β, γ)
+
+    return parm
+end
+
+function set_parm_etadep(parsed_args, eta0::Float64)
+    #parsed_args = parse_input_args()
+    t_i = parsed_args["t_i"]
+    a_u = parsed_args["a_u"]
+    a_d = parsed_args["a_d"]
+    Pr = parsed_args["Pr"]
+    mu0 = parsed_args["mu0"]
+    eta = eta0
+    T = parsed_args["T"]
+    hx = parsed_args["hx"]
+    hy = parsed_args["hy"]
+    hz = parsed_args["hz"]
+    K_SIZE = parsed_args["K_SIZE"]
+    W_MAX = parsed_args["W_MAX"]
+    W_in = parsed_args["W_in"]
+    W_SIZE = parsed_args["W_SIZE"]
+    α = parsed_args["α"]
+    β = parsed_args["β"]
+    γ = parsed_args["γ"]
+    # Convert to Parm struct
+    parm = Parm(t_i, a_u, a_d, Pr, mu0, eta, T, hx, hy, hz, K_SIZE, W_MAX, W_in, W_SIZE, α, β, γ)
+
+    return parm
+end
+
+function set_parm_Tdep(parsed_args, T0::Float64)
+    #parsed_args = parse_input_args()
+    t_i = parsed_args["t_i"]
+    a_u = parsed_args["a_u"]
+    a_d = parsed_args["a_d"]
+    Pr = parsed_args["Pr"]
+    mu0 = parsed_args["mu0"]
+    eta = parsed_args["eta"]
+    T = T0
+    hx = parsed_args["hx"]
+    hy = parsed_args["hy"]
+    hz = parsed_args["hz"]
+    K_SIZE = parsed_args["K_SIZE"]
+    W_MAX = parsed_args["W_MAX"]
+    W_in = parsed_args["W_in"]
+    W_SIZE = parsed_args["W_SIZE"]
+    α = parsed_args["α"]
+    β = parsed_args["β"]
+    γ = parsed_args["γ"]
+    # Convert to Parm struct
+    parm = Parm(t_i, a_u, a_d, Pr, mu0, eta, T, hx, hy, hz, K_SIZE, W_MAX, W_in, W_SIZE, α, β, γ)
+
+    return parm
+end
+#=
 function set_parm(arg::Array{String,1})
     t_i = parse(Float64,arg[1])
     a_u = parse(Float64,arg[2])
@@ -88,7 +293,7 @@ function set_parm_etadep(arg::Array{String,1}, eta0::Float64)
     return t_i, a_u, a_d, Pr, mu0, eta, T, hx, hy, hz, K_SIZE, W_MAX, W_in, W_SIZE, α, β, γ
 end
 
-function set_parm_etadep(arg::Array{String,1}, T0::Float64)
+function set_parm_Tdep(arg::Array{String,1}, T0::Float64)
     t_i = parse(Float64,arg[1])
     a_u = parse(Float64,arg[2])
     a_d = parse(Float64,arg[3])
@@ -131,17 +336,19 @@ function set_parm_Wdep(arg::Array{String,1}, Win::Float64)
 
     return t_i, a_u, a_d, Pr, mu0, eta, T, hx, hy, hz, K_SIZE, W_MAX, W_in, W_SIZE, α, β, γ
 end
+=#
 
 
-a1 = [1.0, 0.0]
-a2 = [-0.5, sqrt(3.0)/2]
-a3 = [0.5, sqrt(3.0)/2]
+a1 = @SVector [1.0, 0.0]
+a2 = @SVector [-0.5, sqrt(3.0)/2]
+a3 = @SVector [0.5, sqrt(3.0)/2]
 
-sigma = [[1.0 0.0; 0.0 1.0], [0.0 1.0; 1.0 0.0], [0.0 -1.0im; 1.0im 0.0], [1.0 0.0; 0.0 -1.0]]
+sigma = @SVector [[1.0 0.0; 0.0 1.0], [0.0 1.0; 1.0 0.0], [0.0 -1.0im; 1.0im 0.0], [1.0 0.0; 0.0 -1.0]]
 
 
 #functions to set Hamiltonian and Velocity operators
 function set_H(k::Vector{Float64},p::Parm)
+    @assert length(k) == 2
     eps::Float64 = 2.0p.t_i*(p.Pr*cos(k'*a1) + cos(k'*a2) + cos(k'*a3)) + p.mu
     g_x::Float64 = p.a_u*(sin(k'*a3) + sin(k'*a2))/2 - p.hx
     g_y::Float64 = -p.a_u * (sin(k'*a1) + (sin(k'*a3) - sin(k'*a2))/2)/sqrt(3.0) - p.hy
@@ -500,4 +707,14 @@ function HandV_fd(k0::NTuple{2, Float64},p::Parm)
     E::Array{ComplexF64,1} = zeros(2)
 
     return H, Va, Vb, Vc, Vab, Vbc, Vca, Vabc, E 
+end
+
+function test_params()
+    params = set_parm()
+    H = set_H([0.0, 0.0], params)
+    println(H)
+end
+
+if abspath(PROGRAM_FILE) == @__FILE__
+    test_params()
 end

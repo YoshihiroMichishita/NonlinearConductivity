@@ -1,11 +1,12 @@
 include("./2D_TMD_parm.jl")
-include("./transport.jl")
-include("./k_C3.jl")
+include("../utils/transport.jl")
+include("../utils/k_C3.jl")
 
 using Plots
 
-function main(arg::Array{String,1})
-    p = Parm(set_parm(arg)...) 
+function main()
+    args = parse_input_args()
+    p = set_parm(args) 
     E = Disp_HSL(p, 2)
 
     ENV["GKSwstype"]="nul"
@@ -20,4 +21,4 @@ end
     
 
 
-@time main(ARGS)
+@time main()
