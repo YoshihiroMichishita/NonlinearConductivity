@@ -226,7 +226,7 @@ function set_parm_Tdep(parsed_args, T0::Float64)
 
     return parm
 end
-
+#=
 function set_parm(arg::Array{String,1})
     t_i = parse(Float64,arg[1])
     a_u = parse(Float64,arg[2])
@@ -336,6 +336,7 @@ function set_parm_Wdep(arg::Array{String,1}, Win::Float64)
 
     return t_i, a_u, a_d, Pr, mu0, eta, T, hx, hy, hz, K_SIZE, W_MAX, W_in, W_SIZE, α, β, γ
 end
+=#
 
 
 a1 = @SVector [1.0, 0.0]
